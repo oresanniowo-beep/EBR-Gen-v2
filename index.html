@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EBR Generator · Xelix</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0D1B4B;--pd:#3D1D6E;--pm:#6B35A8;--pl:#C8A8F0;
+  --pink:#E91E8C;--white:#FFFFFF;--grey:#9B96B0;--card:rgba(255,255,255,0.07);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;color:var(--white);overflow-x:hidden;}
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;}
+.o1{width:650px;height:650px;background:radial-gradient(circle,rgba(107,53,168,0.4) 0%,transparent 70%);top:-220px;right:-160px;}
+.o2{width:420px;height:420px;background:radial-gradient(circle,rgba(233,30,140,0.18) 0%,transparent 70%);bottom:-120px;left:-100px;}
+.shell{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:52px 24px 80px;}
+
+/* header */
+.logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:1px;display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--pink);}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:56px;}
+.nav-link{color:rgba(255,255,255,0.5);font-size:13px;text-decoration:none;}
+.nav-link:hover{color:rgba(255,255,255,0.85);}
+
+/* hero */
+.hero{margin-bottom:48px;}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:3px;color:var(--pink);text-transform:uppercase;margin-bottom:14px;}
+.hero h1{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;line-height:1.12;letter-spacing:-1px;margin-bottom:16px;}
+.hero h1 span{color:var(--pl);}
+.hero p{font-size:16px;color:rgba(255,255,255,0.55);line-height:1.6;max-width:520px;}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:40px;}
+.step{background:var(--card);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px 14px;}
+.step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--pm),var(--pink));font-family:'Syne',sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.step h4{font-size:13px;font-weight:600;margin-bottom:4px;}
+.step p{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.4;}
+
+/* card */
+.card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:36px;margin-bottom:16px;backdrop-filter:blur(10px);}
+.card-label{font-size:11px;font-weight:600;letter-spacing:2px;color:var(--pl);text-transform:uppercase;margin-bottom:20px;}
+
+/* input */
+.input-wrap{position:relative;margin-bottom:10px;}
+.input-wrap input{
+  width:100%;padding:16px 20px;background:rgba(255,255,255,0.06);
+  border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;
+  font-size:15px;color:var(--white);font-family:'DM Sans',sans-serif;outline:none;
+  transition:border-color 0.2s;
+}
+.input-wrap input:focus{border-color:var(--pm);}
+.input-wrap input::placeholder{color:rgba(255,255,255,0.3);}
+.input-hint{font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:28px;line-height:1.5;}
+.input-hint a{color:var(--pl);text-decoration:none;}
+.input-hint a:hover{text-decoration:underline;}
+
+/* button */
+/* Password gate */
+.gate{position:fixed;inset:0;background:var(--navy);z-index:999;display:flex;align-items:center;justify-content:center;}
+.gate-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:48px 40px;width:100%;max-width:400px;text-align:center;backdrop-filter:blur(10px);}
+.gate-card .logo{justify-content:center;margin-bottom:32px;}
+.gate-card h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;}
+.gate-card p{color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:28px;}
+.gate-error{color:#fca5a5;font-size:13px;margin-top:10px;display:none;}
+.gate-error.show{display:block;}
+
+.btn{
+  width:100%;padding:17px;border:none;border-radius:12px;
+  font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.3px;
+  cursor:pointer;transition:all 0.2s;
+  background:linear-gradient(135deg,var(--pm) 0%,var(--pink) 100%);
+  color:var(--white);
+}
+.btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 32px rgba(233,30,140,0.35);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none;}
+
+/* status */
+.status{display:none;margin-top:20px;padding:18px 20px;border-radius:12px;font-size:14px;line-height:1.6;}
+.status.show{display:block;}
+.s-loading{background:rgba(107,53,168,0.25);border:1px solid rgba(107,53,168,0.4);color:var(--pl);}
+.s-error{background:rgba(220,38,38,0.15);border:1px solid rgba(220,38,38,0.3);color:#fca5a5;}
+.s-success{background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.3);color:#6ee7b7;}
+.progress{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:12px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--pm),var(--pink));border-radius:2px;width:0%;transition:width 0.6s ease;}
+
+/* download */
+.dl-btn{
+  display:inline-flex;align-items:center;gap:8px;margin-top:14px;
+  padding:12px 24px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px;color:var(--white);font-size:14px;font-weight:600;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;
+}
+.dl-btn:hover{background:rgba(255,255,255,0.18);}
+
+/* hint table */
+.hint-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:24px;}
+.hint-card h3{font-size:14px;font-weight:600;color:var(--pl);margin-bottom:16px;letter-spacing:0.3px;}
+.hint-row{display:flex;gap:16px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px;}
+.hint-row:last-child{border-bottom:none;}
+.hint-slide{color:var(--pink);font-weight:600;min-width:110px;}
+.hint-src{color:rgba(255,255,255,0.5);}
+
+@media(max-width:600px){
+  .steps{grid-template-columns:repeat(2,1fr);}
+  .hero h1{font-size:30px;}
+}
+</style>
+</head>
+<body>
+<!-- Password Gate -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="logo">XELIX<div class="logo-dot"></div></div>
+    <h2>EBR Generator</h2>
+    <p>Enter your team password to continue.</p>
+    <div class="input-wrap">
+      <input type="password" id="passwordInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPassword()" />
+    </div>
+    <div class="gate-error" id="gateError">Incorrect password. Please try again.</div>
+    <button class="btn" style="margin-top:16px" onclick="checkPassword()">Unlock →</button>
+  </div>
+</div>
+
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
+<div class="shell">
+  <div class="nav">
+    <div class="logo">XELIX<div class="logo-dot"></div></div>
+    <a class="nav-link" href="https://www.notion.so/xelix/EBR-Data-Collection-Hub-3570bc430832811688c7e4e77e2da893" target="_blank">← EBR Hub in Notion</a>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow">EBR Deck Generator</div>
+    <h1>Your EBR deck,<br><span>ready in minutes.</span></h1>
+    <p>Fill in the Notion form, paste your record URL, and we'll generate a fully populated PowerPoint deck — no copy-pasting required.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><h4>Fill Notion form</h4><p>Complete the Pre-EBR Form (~30 mins)</p></div>
+    <div class="step"><div class="step-num">2</div><h4>Copy record URL</h4><p>Open your customer row → copy URL from browser</p></div>
+    <div class="step"><div class="step-num">3</div><h4>Generate deck</h4><p>Paste URL → Generate → download .pptx</p></div>
+    <div class="step"><div class="step-num">4</div><h4>Add screenshots</h4><p>Paste QBR Reporting charts into grey placeholders</p></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Generate your deck</div>
+
+    <div class="input-wrap">
+      <input type="text" id="notionUrl" placeholder="https://www.notion.so/xelix/Customer-Name-3500bc43..." />
+    </div>
+    <div class="input-hint">
+      Open your customer's EBR record in Notion → copy the URL from your browser bar → paste above.<br>
+      Haven't filled in the data yet? <a href="https://www.notion.so/xelix/EBR-Data-Collection-Hub-3570bc430832811688c7e4e77e2da893" target="_blank">Open the EBR Data Collection Hub →</a>
+    </div>
+
+    <button class="btn" id="generateBtn" onclick="generate()">⚡ Generate EBR Deck</button>
+
+    <div class="status s-loading" id="sLoading">
+      <strong>Generating your deck…</strong><br>
+      <span id="sMsg">Connecting to Notion…</span>
+      <div class="progress"><div class="progress-fill" id="progressBar"></div></div>
+    </div>
+    <div class="status s-error" id="sError">
+      <strong>❌ Something went wrong</strong><br><span id="eMsg"></span>
+    </div>
+    <div class="status s-success" id="sSuccess">
+      <strong>✅ Your EBR deck is ready!</strong><br>
+      Download below, then paste screenshots into the grey chart placeholder slides.<br><br>
+      <button class="dl-btn" id="dlBtn">⬇ Download EBR Deck (.pptx)</button>
+    </div>
+  </div>
+
+  <div class="hint-card">
+    <h3>📋 After downloading — add your screenshots</h3>
+    <div class="hint-row"><span class="hint-slide">Slides 9–11</span><span class="hint-src">Transactions · QBR Reporting → Transactions Tab</span></div>
+    <div class="hint-row"><span class="hint-slide">Slides 13–14</span><span class="hint-src">Statements · QBR Reporting → Statements Tab + Internal Dashboard</span></div>
+    <div class="hint-row"><span class="hint-slide">Slide 16</span><span class="hint-src">Helpdesk tickets · QBR Reporting → Helpdesk Tab</span></div>
+    <div class="hint-row"><span class="hint-slide">Slide 17</span><span class="hint-src">Gen AI deep dive · Cockpit → Outgoing Tickets Dashboard</span></div>
+  </div>
+</div>
+
+<script>
+const PROXY = 'https://ebr-proxy-production.up.railway.app';
+let blob = null, filename = 'EBR_Deck.pptx';
+
+function show(type, msg) {
+  document.getElementById('sLoading').classList.remove('show');
+  document.getElementById('sError').classList.remove('show');
+  document.getElementById('sSuccess').classList.remove('show');
+  if (type === 'loading') {
+    document.getElementById('sMsg').textContent = msg || '';
+    document.getElementById('sLoading').classList.add('show');
+  } else if (type === 'error') {
+    document.getElementById('eMsg').textContent = msg || '';
+    document.getElementById('sError').classList.add('show');
+  } else if (type === 'success') {
+    document.getElementById('sSuccess').classList.add('show');
+  }
+}
+
+function progress(pct) {
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function extractId(url) {
+  const clean = url.replace(/#.*/, '').trim();
+  const m = clean.match(/([0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12})/i);
+  if (m) return m[1].replace(/-/g, '');
+  const parts = clean.split('/').filter(Boolean);
+  const last = parts[parts.length - 1];
+  const seg = last.split('-').pop();
+  return (seg && seg.replace(/-/g,'').length >= 32) ? seg.replace(/-/g,'') : null;
+}
+
+async function generate() {
+  const url = document.getElementById('notionUrl').value.trim();
+  if (!url) { show('error', 'Please paste the Notion record URL first.'); return; }
+  const pageId = extractId(url);
+  if (!pageId) { show('error', 'Could not find a valid Notion page ID in that URL. Copy the full URL directly from your browser address bar.'); return; }
+
+  document.getElementById('generateBtn').disabled = true;
+  blob = null;
+
+  try {
+    show('loading', 'Connecting to Notion…');
+    progress(10);
+
+    const notionResp = await fetch(`${PROXY}/notion/page/${pageId}`);
+    if (!notionResp.ok) {
+      const e = await notionResp.json().catch(() => ({}));
+      throw new Error(e.error || `Could not read Notion page (${notionResp.status}). Make sure the EBR Generator integration has access to this page.`);
+    }
+    const data = await notionResp.json();
+    progress(45);
+
+    const name = data['Customer Name'] || 'Customer';
+    show('loading', `Found data for ${name} — building deck…`);
+    progress(60);
+
+    const genResp = await fetch(`${PROXY}/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data })
+    });
+    if (!genResp.ok) {
+      const e = await genResp.json().catch(() => ({}));
+      throw new Error(e.error || `Deck generation failed (${genResp.status}).`);
+    }
+
+    blob = await genResp.blob();
+    progress(100);
+
+    const safe = name.replace(/[^a-zA-Z0-9 _-]/g,'').trim().replace(/\s+/g,'_');
+    filename = `EBR_${safe}_${new Date().toISOString().slice(0,10)}.pptx`;
+    show('success');
+
+  } catch(err) {
+    show('error', err.message || 'An unexpected error occurred. Please try again.');
+  } finally {
+    document.getElementById('generateBtn').disabled = false;
+  }
+}
+
+document.getElementById('dlBtn').addEventListener('click', () => {
+  if (!blob) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('notionUrl').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generate();
+});
+
+// ── Password gate ────────────────────────────────────────────────────────────
+const CORRECT_PASSWORD = 'xelix2026';
+
+function checkPassword() {
+  const input = document.getElementById('passwordInput').value;
+  if (input === CORRECT_PASSWORD) {
+    document.getElementById('gate').style.display = 'none';
+    sessionStorage.setItem('ebr_auth', '1');
+  } else {
+    document.getElementById('gateError').classList.add('show');
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
+  }
+}
+
+// Auto-unlock if already authenticated this session
+if (sessionStorage.getItem('ebr_auth') === '1') {
+  document.getElementById('gate').style.display = 'none';
+}
+
+// Focus password field on load
+window.addEventListener('load', () => {
+  const gate = document.getElementById('gate');
+  if (gate.style.display !== 'none') {
+    document.getElementById('passwordInput').focus();
+  }
+});
+</script>
+</body>
+</html>
