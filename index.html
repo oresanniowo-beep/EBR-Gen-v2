@@ -57,15 +57,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
 .input-hint a:hover{text-decoration:underline;}
 
 /* button */
-/* Password gate */
-.gate{position:fixed;inset:0;background:var(--navy);z-index:999;display:flex;align-items:center;justify-content:center;}
-.gate-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:48px 40px;width:100%;max-width:400px;text-align:center;backdrop-filter:blur(10px);}
-.gate-card .logo{justify-content:center;margin-bottom:32px;}
-.gate-card h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;}
-.gate-card p{color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:28px;}
-.gate-error{color:#fca5a5;font-size:13px;margin-top:10px;display:none;}
-.gate-error.show{display:block;}
-
 .btn{
   width:100%;padding:17px;border:none;border-radius:12px;
   font-family:'Syne',sans-serif;font-size:16px;font-weight:700;letter-spacing:0.3px;
@@ -109,20 +100,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
 </style>
 </head>
 <body>
-<!-- Password Gate -->
-<div class="gate" id="gate">
-  <div class="gate-card">
-    <div class="logo">XELIX<div class="logo-dot"></div></div>
-    <h2>EBR Generator</h2>
-    <p>Enter your team password to continue.</p>
-    <div class="input-wrap">
-      <input type="password" id="passwordInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPassword()" />
-    </div>
-    <div class="gate-error" id="gateError">Incorrect password. Please try again.</div>
-    <button class="btn" style="margin-top:16px" onclick="checkPassword()">Unlock →</button>
-  </div>
-</div>
-
 <div class="orb o1"></div>
 <div class="orb o2"></div>
 
@@ -142,7 +119,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
     <div class="step"><div class="step-num">1</div><h4>Fill Notion form</h4><p>Complete the Pre-EBR Form (~30 mins)</p></div>
     <div class="step"><div class="step-num">2</div><h4>Copy record URL</h4><p>Open your customer row → copy URL from browser</p></div>
     <div class="step"><div class="step-num">3</div><h4>Generate deck</h4><p>Paste URL → Generate → download .pptx</p></div>
-    <div class="step"><div class="step-num">4</div><h4>Add screenshots</h4><p>Paste QBR Reporting charts into grey placeholders</p></div>
+    <div class="step"><div class="step-num">4</div><h4>Screenshots auto-embed</h4><p>Upload screenshots in the Notion form — they appear in the deck automatically</p></div>
   </div>
 
   <div class="card">
@@ -168,19 +145,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
     </div>
     <div class="status s-success" id="sSuccess">
       <strong>✅ Your EBR deck is ready!</strong><br>
-      Download below, then paste screenshots into the grey chart placeholder slides.<br><br>
+      Download below — your screenshots have been automatically embedded from the Notion form.<br><br>
       <button class="dl-btn" id="dlBtn">⬇ Download EBR Deck (.pptx)</button>
     </div>
   </div>
-
-  <div class="hint-card">
-    <h3>📋 After downloading — add your screenshots</h3>
-    <div class="hint-row"><span class="hint-slide">Slides 9–11</span><span class="hint-src">Transactions · QBR Reporting → Transactions Tab</span></div>
-    <div class="hint-row"><span class="hint-slide">Slides 13–14</span><span class="hint-src">Statements · QBR Reporting → Statements Tab + Internal Dashboard</span></div>
-    <div class="hint-row"><span class="hint-slide">Slide 16</span><span class="hint-src">Helpdesk tickets · QBR Reporting → Helpdesk Tab</span></div>
-    <div class="hint-row"><span class="hint-slide">Slide 17</span><span class="hint-src">Gen AI deep dive · Cockpit → Outgoing Tickets Dashboard</span></div>
-  </div>
-</div>
 
 <script>
 const PROXY = 'https://ebr-proxy-production.up.railway.app';
@@ -277,34 +245,6 @@ document.getElementById('dlBtn').addEventListener('click', () => {
 
 document.getElementById('notionUrl').addEventListener('keydown', e => {
   if (e.key === 'Enter') generate();
-});
-
-// ── Password gate ────────────────────────────────────────────────────────────
-const CORRECT_PASSWORD = 'xelix2026';
-
-function checkPassword() {
-  const input = document.getElementById('passwordInput').value;
-  if (input === CORRECT_PASSWORD) {
-    document.getElementById('gate').style.display = 'none';
-    sessionStorage.setItem('ebr_auth', '1');
-  } else {
-    document.getElementById('gateError').classList.add('show');
-    document.getElementById('passwordInput').value = '';
-    document.getElementById('passwordInput').focus();
-  }
-}
-
-// Auto-unlock if already authenticated this session
-if (sessionStorage.getItem('ebr_auth') === '1') {
-  document.getElementById('gate').style.display = 'none';
-}
-
-// Focus password field on load
-window.addEventListener('load', () => {
-  const gate = document.getElementById('gate');
-  if (gate.style.display !== 'none') {
-    document.getElementById('passwordInput').focus();
-  }
 });
 </script>
 </body>
