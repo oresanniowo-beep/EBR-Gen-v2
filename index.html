@@ -56,6 +56,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
 .input-hint a{color:var(--pl);text-decoration:none;}
 .input-hint a:hover{text-decoration:underline;}
 
+/* Password gate */
+.gate{position:fixed;inset:0;background:var(--navy);z-index:999;display:flex;align-items:center;justify-content:center;}
+.gate-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:48px 40px;width:100%;max-width:400px;text-align:center;backdrop-filter:blur(10px);}
+.gate-card .logo{justify-content:center;margin-bottom:32px;}
+.gate-card h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px;}
+.gate-card p{color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:28px;}
+.gate-error{color:#fca5a5;font-size:13px;margin-top:10px;display:none;}
+.gate-error.show{display:block;}
+
 /* button */
 .btn{
   width:100%;padding:17px;border:none;border-radius:12px;
@@ -100,13 +109,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
 </style>
 </head>
 <body>
+
+<!-- Password Gate -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="logo">XELIX<div class="logo-dot"></div></div>
+    <h2>EBR Generator</h2>
+    <p>Enter your team password to continue.</p>
+    <div class="input-wrap">
+      <input type="password" id="passwordInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPassword()" />
+    </div>
+    <div class="gate-error" id="gateError">Incorrect password. Please try again.</div>
+    <button class="btn" style="margin-top:16px" onclick="checkPassword()">Unlock →</button>
+  </div>
+</div>
+
 <div class="orb o1"></div>
 <div class="orb o2"></div>
 
 <div class="shell">
   <div class="nav">
     <div class="logo">XELIX<div class="logo-dot"></div></div>
-    <a class="nav-link" href="https://www.notion.so/xelix/EBR-Data-Collection-Hub-3570bc430832811688c7e4e77e2da893" target="_blank">← EBR Hub in Notion</a>
+    <a class="nav-link" href="https://www.notion.so/xelix/EBR-Deck-Playbook-3570bc430832811688c7e4e77e2da893" target="_blank">← EBR Playbook in Notion</a>
   </div>
 
   <div class="hero">
@@ -119,7 +143,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
     <div class="step"><div class="step-num">1</div><h4>Fill Notion form</h4><p>Complete the Pre-EBR Form (~30 mins)</p></div>
     <div class="step"><div class="step-num">2</div><h4>Copy record URL</h4><p>Open your customer row → copy URL from browser</p></div>
     <div class="step"><div class="step-num">3</div><h4>Generate deck</h4><p>Paste URL → Generate → download .pptx</p></div>
-    <div class="step"><div class="step-num">4</div><h4>Screenshots auto-embed</h4><p>Upload screenshots in the Notion form — they appear in the deck automatically</p></div>
+    <div class="step"><div class="step-num">4</div><h4>Fill in Current Performance</h4><p>Manually update Slides 13, 21, 28 after downloading</p></div>
   </div>
 
   <div class="card">
@@ -130,7 +154,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
     </div>
     <div class="input-hint">
       Open your customer's EBR record in Notion → copy the URL from your browser bar → paste above.<br>
-      Haven't filled in the data yet? <a href="https://www.notion.so/xelix/EBR-Data-Collection-Hub-3570bc430832811688c7e4e77e2da893" target="_blank">Open the EBR Data Collection Hub →</a>
+      Haven't filled in the data yet? <a href="https://www.notion.so/xelix/EBR-Forms-7028af0e4d694090a13bf1467f75be30" target="_blank">Open EBR Forms →</a>
     </div>
 
     <button class="btn" id="generateBtn" onclick="generate()">⚡ Generate EBR Deck</button>
@@ -145,10 +169,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--navy);min-height:100vh;co
     </div>
     <div class="status s-success" id="sSuccess">
       <strong>✅ Your EBR deck is ready!</strong><br>
-      Download below — your screenshots have been automatically embedded from the Notion form.<br><br>
+      Download below. Then open the deck and fill in the <strong>Current Performance</strong> column on Slides 13, 21 and 28.<br><br>
       <button class="dl-btn" id="dlBtn">⬇ Download EBR Deck (.pptx)</button>
     </div>
   </div>
+
+  <div class="hint-card">
+    <h3>📋 After downloading — what to do manually</h3>
+    <div class="hint-row"><span class="hint-slide">Slide 13</span><span class="hint-src">Fill in Current Performance column — Transactions Goals/KPIs table</span></div>
+    <div class="hint-row"><span class="hint-slide">Slide 21</span><span class="hint-src">Fill in Current Performance column — Statements Goals/KPIs table</span></div>
+    <div class="hint-row"><span class="hint-slide">Slide 28</span><span class="hint-src">Fill in Current Performance column — Helpdesk Goals/KPIs table</span></div>
+  </div>
+</div>
 
 <script>
 const PROXY = 'https://ebr-proxy-production.up.railway.app';
@@ -245,6 +277,34 @@ document.getElementById('dlBtn').addEventListener('click', () => {
 
 document.getElementById('notionUrl').addEventListener('keydown', e => {
   if (e.key === 'Enter') generate();
+});
+
+// ── Password gate ────────────────────────────────────────────────────
+const CORRECT_PASSWORD = 'xelix2026';
+
+function checkPassword() {
+  const input = document.getElementById('passwordInput').value;
+  if (input === CORRECT_PASSWORD) {
+    document.getElementById('gate').style.display = 'none';
+    sessionStorage.setItem('ebr_auth', '1');
+  } else {
+    document.getElementById('gateError').classList.add('show');
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('passwordInput').focus();
+  }
+}
+
+// Auto-unlock if already authenticated this session
+if (sessionStorage.getItem('ebr_auth') === '1') {
+  document.getElementById('gate').style.display = 'none';
+}
+
+// Focus password field on load
+window.addEventListener('load', () => {
+  const gate = document.getElementById('gate');
+  if (gate.style.display !== 'none') {
+    document.getElementById('passwordInput').focus();
+  }
 });
 </script>
 </body>
